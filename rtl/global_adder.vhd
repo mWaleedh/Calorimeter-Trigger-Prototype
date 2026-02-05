@@ -8,12 +8,12 @@ entity global_adder is
 	);
 	port (
 		chan0_i, chan1_i   : in  unsigned(DATA_WIDTH_g-1 downto 0);
-		chan2_i, chan3_i 	 : in  unsigned(DATA_WIDTH_g-1 downto 0);
+		chan2_i, chan3_i   : in  unsigned(DATA_WIDTH_g-1 downto 0);
 		chan4_i, chan5_i   : in  unsigned(DATA_WIDTH_g-1 downto 0);
-		chan6_i, chan7_i	 : in  unsigned(DATA_WIDTH_g-1 downto 0);
-		chan8_i, chan9_i	 : in  unsigned(DATA_WIDTH_g-1 downto 0);
+		chan6_i, chan7_i   : in  unsigned(DATA_WIDTH_g-1 downto 0);
+		chan8_i, chan9_i   : in  unsigned(DATA_WIDTH_g-1 downto 0);
 		chan10_i, chan11_i : in  unsigned(DATA_WIDTH_g-1 downto 0);
-		global_sum_o 		 : out unsigned(DATA_WIDTH_g+3 downto 0)
+		global_sum_o 	   : out unsigned(DATA_WIDTH_g+3 downto 0)
 	);
 end global_adder;
 
@@ -40,6 +40,6 @@ begin
 	sum_quad2_s <= resize(sum_duo4_s, sum_quad2_s'length) + resize(sum_duo5_s, sum_quad2_s'length);
 
 	global_sum_o <= resize(sum_quad0_s, global_sum_o'length) +
-						 resize(sum_quad1_s, global_sum_o'length) +
-						 resize(sum_quad2_s, global_sum_o'length);
+					resize(sum_quad1_s, global_sum_o'length) +
+					resize(sum_quad2_s, global_sum_o'length);
 end rtl;	

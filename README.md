@@ -1,7 +1,7 @@
 # Technical Specification: 4-Stage Pipelined Calorimeter Trigger
 
 ## 1. Project Overview
-This project implements a high-throughput, cycle-accurate calorimeter trigger prototype designed for real-time data reduction in high-energy physics environments. The system processes 12 parallel channels of digitized energy data to identify "jet" candidates through local energy concentrations and global energy sums. 
+This project implements a high-throughput, calorimeter trigger designed for real-time data reduction in high-energy physics environments. This system takes calorimeter input in the form of 12 parallel channels of digitized energy data to identify "jet" candidates through local energy concentrations and global energy sums. 
 
 To handle the high event frequency characteristic of Large Hadron Collider (LHC) experiments, the design utilizes a **streaming pipelined architecture**. This approach ensures that the system can accept a new input event on every clock cycle, regardless of the total calculation latency.
 
@@ -9,7 +9,7 @@ To handle the high event frequency characteristic of Large Hadron Collider (LHC)
 The architecture follows a streaming paradigm rather than a centralized Finite State Machine (FSM) control structure. 
 
 *   **Streaming vs. FSM:** Centralized FSMs often introduce stall cycles or complex handshaking that limits throughput. By utilizing streaming semantics, this design achieves a throughput of one event per clock cycle.
-*   **Valid-Signal Propagation:** Control is decentralized. A "valid" bit travels alongside the data through every register stage. This ensures that the control logic is always perfectly synchronized with the data path, eliminating the risk of misaligning decisions with the wrong event.
+*   **Valid-Signal Propagation:** Convery register stage. This ensures that the control logic is always perfectly synchronized with the data path, eliminating the risk of misaligning decisions with the wrong event.trol is decentralized. A "valid" bit travels alongside the data through e
 *   **Register-Defined Boundaries:** Pipeline registers are placed to break the critical path of the arithmetic logic (adders and comparators), allowing for higher maximum frequencies ($F_{max}$) while maintaining deterministic, fixed latency.
 
 ## 3. Top-Level Block Diagram Description
@@ -22,26 +22,26 @@ The system is partitioned into a single linear pipeline. The diagram (referenced
 
 ### Stage 0: Input Sampling
 *   **Purpose:** To provide a clean, registered boundary for external asynchronous or poorly timed inputs.
-*   **Inputs:** Raw channel data (12x12-bit), `event_valid_i`, and thresholds.
-*   **Operation:** On the rising edge, all inputs are captured into the `s0` register bank. 
+*   **Inputs:** Raw channel data (12x16-bit), `event_valid_i`, and thresholds.
+*   **Operation:** On the rising edge, all inputs are captured into the `s0` register. 
 *   **Valid Handling:** `s0_valid` is asserted based on the external `event_valid_i`.
 
-### Stage 1: Sliding Window Evaluation (Local Feature Extraction)
+### Stage 1: Sliding Window Evaluation
 *   **Purpose:** To identify local energy clusters (jets) using a 3-channel sliding window.
 *   **Combinatorial Logic:** 10 parallel 3-input adders followed by 10 parallel comparators. A final 10-input OR-reduction identifies if any window exceeded the `stage1_threshold`.
-*   **Operation:** The results of the OR-reduction and a copy of the raw `s0_channels` are prepared for the next register bank.
+*   **Operation:** The results of the OR-reduction and a copy of the raw `s0_channels` are prepared for the next register.
 *   **Registered Outputs:** `s1_stage1_pass`, `s1_channels`, `s1_valid`.
 
-### Stage 2: Global Energy Evaluation (Global Summation)
-*   **Purpose:** To compute the total energy of the event for high-precision filtering.
+### Stage 2: Global Energy Evaluation
+*   **Purpose:** To compute the total energy of the event and align regional results with the global summation.
 *   **Combinatorial Logic:** A 12-input balanced adder tree and a single global comparator.
-*   **Operation:** Performs the full summation of all channels residing in the `s1` registers. This stage implements "early rejection" logic: if `s1_stage1_pass` is low, the `s2_valid` bit is de-asserted to prevent downstream processing.
-*   **Registered Outputs:** `s2_stage2_pass`, `s2_valid`.
+*   **Operation:** Performs the full summation of all channels residing in the `s1` registers. The resulting sum is compared against the forwarded threshold (`s1_thres_st2`) to produce the Stage 2 pass flag.
+*   **Registered Outputs:** `s2_stage1_pass` (forwarded), `s2_stage2_pass` (global result), `s2_valid`.
 
 ### Stage 3: Final Decision Register
 *   **Purpose:** To provide a stable, registered output for the final trigger decision.
-*   **Combinatorial Logic:** A logical AND between the propagated `s2_stage1_pass` and the newly calculated `s2_stage2_pass`.
-*   **Operation:** The final result is gated by `s2_valid` to ensure no false triggers are emitted during idle cycles or after rejections.
+*   **Combinatorial Logic:** A logical AND between the registered regional decision (`s2_stage1_pass`) and the registered global decision (`s2_stage2_pass`).
+*   **Operation:** The result of the coincidence logic is gated by the `s2_valid` bit to ensure no false triggers are emitted during pipeline stalls or idle cycles.
 *   **Output:** `final_accept_o`.
 
 ## 5. Cycle-Accurate Timing Description
@@ -84,5 +84,3 @@ Verification was performed using a cycle-accurate VHDL testbench.
 *   **AXI4-Stream Compliance:** Future iterations could wrap this pipeline in a formal AXI-Stream interface (adding `TLAST` and `TREADY`).
 *   **Muon Integration:** Parallel track-finding pipelines can be integrated into the Stage 2 decision logic.
 *   **Programmable Thresholds:** Replacing internal constants with an AXI-Lite register interface for dynamic threshold adjustment.
-
-***
