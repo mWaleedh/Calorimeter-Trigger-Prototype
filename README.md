@@ -86,14 +86,3 @@ Verification was performed using a cycle-accurate VHDL testbench.
 *   **Programmable Thresholds:** Replacing internal constants with an AXI-Lite register interface for dynamic threshold adjustment.
 
 ***
-
-# Meta-Analysis: How to write like an Engineer
-
-When you write documentation like the above, you are learning several high-level professional skills:
-
-1.  **Terminology as a Precision Tool:** Notice words like *Deterministic*, *Throughput*, *Critical Path*, and *Propagated*. These aren't fancy synonyms; they have specific mathematical and physical meanings in hardware. Using them correctly tells an employer you understand the underlying physics of FPGAs.
-2.  **The "Separation of Concerns":** You didn't just explain the code; you explained the *semantics* (the rules). Section 6 (Valid Signal Semantics) is the most important section for a professional. It explains the "Control Law" of your chip.
-3.  **Admitting Limitations:** In Section 9, we list what the project *doesn't* do. Students often try to hide weaknesses. Professionals list "Non-Goals" to define the scope of the contract. It proves you know what a full system requires (like AXI or timing closure) even if you didn't implement it here.
-4.  **Formatting for Skimmers:** Engineers are busy. They look for tables (Section 5) and bullet points. If they can understand your pipeline without reading the paragraphs, you've written a great document.
-
-**How to practice this:** Next time you write a component (even a small one), try to write a "Timing Table" for it first. If you can't define the timing in a table, you haven't fully designed the hardware yet.
